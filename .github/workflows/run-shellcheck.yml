@@ -1,0 +1,10 @@
+name: run-shellcheck
+run-name: Test code quality with shellcheck (#${{ github.run_id }})
+on: [push]
+jobs:
+  execute-shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: apt install shellcheck
+      - run: shellcheck checkoutdatedlibs.sh
