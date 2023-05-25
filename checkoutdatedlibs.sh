@@ -15,6 +15,12 @@ main() {
         fi
     done
 
+    # Check kernel version
+    # (this assumes the old modules get removed)
+    if [ ! -d "/usr/lib/modules/$(uname -r)/" ]; then
+        echo "Kernel is outdated (running $(uname -r))"
+    fi
+
     if [ $outdated -gt 0 ]; then
         exit 1;
     else
