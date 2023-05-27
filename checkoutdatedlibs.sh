@@ -6,6 +6,11 @@
 
 main() {
     outdated=0
+    
+    # Whether to say the user show logout/back in or reboot
+    advice=""
+    
+    my_uid="$(id -u)"
 
     for pid in $(ps aux | awk '{print $2}' | grep -v "PID"); do
         maps="$(grep -v '/memfd:' "/proc/$pid/maps" 2>/dev/null)"
@@ -13,6 +18,17 @@ main() {
             # TODO: add some edge cases from htop code (see https://github.com/htop-dev/htop/blob/f0a7a78797bd9fd9b8215cc194922d7bc1d6b885/linux/LinuxProcessList.c#L657)
             echo "$pid ($(cat /proc/"$pid"/comm)) is outdated or has outdated libraries"
             outdated=$(( outdated + 1 ))
+            
+            # Check if the user owns the process's directory
+            # If it's owned by someone else (likely root or a user for a specific daemon), advice the user to reboot
+            if [ "$my_uid" -ne "$(stat "/proc/$pid" --format=%u)" ]; then
+                advice='reboot'
+            else
+                # 'reboot' has higher precedence than 'logout'
+                if [ "$advice" != 'reboot' ]; then
+                    advice='logout'
+                fi
+            fi
         fi
     done
 
@@ -21,9 +37,17 @@ main() {
     if [ ! -d "/usr/lib/modules/$(uname -r)/" ]; then
         echo "Kernel is outdated (running $(uname -r))"
         outdated=$(( outdated + 1))
+        advice=reboot
     fi
 
     if [ $outdated -gt 0 ]; then
+        case $advice in
+            'reboot') echo "Advice: reboot your computer"
+            ;;
+            'logout') echo "Advice: log out and back in"
+            ;;
+        esac
+    
         exit 1;
     else
         echo "No outdated programs or libraries detected"
