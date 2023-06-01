@@ -9,8 +9,15 @@ main() {
     
     # Whether to say the user show logout/back in or reboot
     advice=""
-    
-    my_uid="$(id -u)"
+
+    if [ "$EUID" -ne 0 ]; then
+        echo "Root is needed to detect outdated libraries in processes running as different users"
+    else
+        my_uid="$SUDO_UID"
+    fi
+    if [ -z "$my_uid" ]; then
+        my_uid="$(id -ru)"
+    fi
 
     for pid in $(ps aux | awk '{print $2}' | grep -v "PID"); do
         maps="$(grep -v '/memfd:' "/proc/$pid/maps" 2>/dev/null)"
