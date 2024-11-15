@@ -2,7 +2,7 @@
 
 # Script to check processes for outdated libraries
 # Made by @Cactric, 2023
-# Inspired from the similar functionallity in htop, split out into a script
+# Inspired from the similar functionality in htop, split out into a script
 
 main() {
     outdated=0
